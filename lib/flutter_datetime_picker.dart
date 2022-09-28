@@ -16,6 +16,15 @@ typedef DateChangedCallback(DateTime time);
 typedef DateCancelledCallback();
 typedef String? StringAtIndexCallBack(int index);
 
+class DataDateCustomPicker{
+  Widget? saveButton;
+  Widget Function(DateTime? dateTime)? titleWidget;
+  bool? isShowCustomView;
+  double? radiusTopLeftRight;
+
+  DataDateCustomPicker({this.saveButton, this.titleWidget, this.isShowCustomView, this.radiusTopLeftRight});
+}
+
 class DatePicker {
   ///
   /// Display date picker bottom sheet.
@@ -31,6 +40,7 @@ class DatePicker {
     locale: LocaleType.en,
     DateTime? currentTime,
     DatePickerTheme? theme,
+    DataDateCustomPicker? dataDateCustomPicker,
   }) async {
     return await Navigator.push(
       context,
@@ -41,6 +51,7 @@ class DatePicker {
         onCancel: onCancel,
         locale: locale,
         theme: theme,
+        dataDateCustomPicker: dataDateCustomPicker,
         barrierLabel:
             MaterialLocalizations.of(context).modalBarrierDismissLabel,
         pickerModel: DatePickerModel(
@@ -194,6 +205,7 @@ class _DatePickerRoute<T> extends PopupRoute<T> {
     DatePickerTheme? theme,
     this.barrierLabel,
     this.locale,
+    this.dataDateCustomPicker,
     RouteSettings? settings,
     BasePickerModel? pickerModel,
   })  : this.pickerModel = pickerModel ?? DatePickerModel(),
@@ -207,6 +219,7 @@ class _DatePickerRoute<T> extends PopupRoute<T> {
   final LocaleType? locale;
   final DatePickerTheme theme;
   final BasePickerModel pickerModel;
+  final DataDateCustomPicker? dataDateCustomPicker;
 
   @override
   Duration get transitionDuration => const Duration(milliseconds: 200);
@@ -241,6 +254,7 @@ class _DatePickerRoute<T> extends PopupRoute<T> {
         locale: this.locale,
         route: this,
         pickerModel: pickerModel,
+        dataDateCustomPicker: dataDateCustomPicker,
       ),
     );
     return InheritedTheme.captureAll(context, bottomSheet);
@@ -254,6 +268,7 @@ class _DatePickerComponent extends StatefulWidget {
     required this.pickerModel,
     this.onChanged,
     this.locale,
+    this.dataDateCustomPicker,
   }) : super(key: key);
 
   final DateChangedCallback? onChanged;
@@ -263,6 +278,8 @@ class _DatePickerComponent extends StatefulWidget {
   final LocaleType? locale;
 
   final BasePickerModel pickerModel;
+
+  final DataDateCustomPicker? dataDateCustomPicker;
 
   @override
   State<StatefulWidget> createState() {
@@ -299,19 +316,18 @@ class _DatePickerState extends State<_DatePickerComponent> {
         animation: widget.route.animation!,
         builder: (BuildContext context, Widget? child) {
           final double bottomPadding = MediaQuery.of(context).padding.bottom;
-          return ClipRect(
-            child: CustomSingleChildLayout(
-              delegate: _BottomPickerLayout(
-                widget.route.animation!.value,
-                theme,
-                showTitleActions: widget.route.showTitleActions!,
-                bottomPadding: bottomPadding,
-              ),
-              child: GestureDetector(
-                child: Material(
-                  color: theme.backgroundColor,
-                  child: _renderPickerView(theme),
-                ),
+          return CustomSingleChildLayout(
+            delegate: _BottomPickerLayout(
+              widget.route.animation!.value,
+              theme,
+              showTitleActions: widget.route.showTitleActions!,
+              bottomPadding: bottomPadding,
+            ),
+            child: GestureDetector(
+              child: Material(
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(widget.dataDateCustomPicker?.radiusTopLeftRight??0), topRight: Radius.circular(widget.dataDateCustomPicker?.radiusTopLeftRight??0)),
+                color: theme.backgroundColor,
+                child: _renderPickerView(theme),
               ),
             ),
           );
@@ -331,13 +347,32 @@ class _DatePickerState extends State<_DatePickerComponent> {
     if (widget.route.showTitleActions == true) {
       return Column(
         children: <Widget>[
-          _renderTitleActionsView(theme),
+          if(!(widget.dataDateCustomPicker?.isShowCustomView??false))...[
+            _renderTitleActionsView(theme),
+          ] else...[
+            if(widget.dataDateCustomPicker?.titleWidget != null)...[
+              widget.dataDateCustomPicker?.titleWidget!(widget.pickerModel.finalTime())??SizedBox.shrink()
+            ]
+          ],
           itemView,
+          if(widget.dataDateCustomPicker?.isShowCustomView??false)...[
+            _renderSaveButton(),
+          ]
         ],
       );
     }
     return itemView;
   }
+
+  Widget _renderSaveButton() => GestureDetector(
+    onTap: () {
+      Navigator.pop(context, widget.pickerModel.finalTime());
+      if (widget.route.onConfirm != null) {
+        widget.route.onConfirm!(widget.pickerModel.finalTime()!);
+      }
+    },
+    child: widget.dataDateCustomPicker?.saveButton,
+  );
 
   Widget _renderColumnView(
     ValueKey key,

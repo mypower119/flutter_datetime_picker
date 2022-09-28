@@ -144,6 +144,50 @@ class HomePage extends StatelessWidget {
                 )),
             TextButton(
                 onPressed: () {
+                  DatePicker.showDatePicker(context,
+                    showTitleActions: true,
+                      theme: DatePickerTheme(
+                        itemHeight: 51,
+                        titleHeight: 120 + 24,
+                        backgroundColor: const Color(0xFFFBFCFF),
+                        containerHeight: 153,
+                        itemStyle: const TextStyle(color: Color(0xFF0F1332), fontSize: 16, fontWeight: FontWeight.w500),
+                      ),
+                      dataDateCustomPicker: DataDateCustomPicker(
+                        radiusTopLeftRight: 12,
+                        isShowCustomView: true,
+                        saveButton:  Container(
+                          margin: EdgeInsets.symmetric(vertical: 24),
+                          width: 300,
+                          height: 47,
+                          decoration: BoxDecoration(
+                              color: Colors.blue
+                          ),
+                          child: Center(
+                            child: Text('Save'),
+                          ),
+                        ),
+                        titleWidget: (title) {
+                          return Container(
+                            height: 69,
+                              child: Center(child: Text(title?.toUtc().toString()??'')),
+                          );
+                        }
+                      ),
+                    locale: LocaleType.vi,
+                      onChanged: (date) {
+                        print('change $date in time zone ' +
+                            date.timeZoneOffset.inHours.toString());
+                      }, onConfirm: (date) {
+                        print('confirm $date');
+                      }, currentTime: DateTime.now(),);
+                },
+                child: Text(
+                  'show date picker',
+                  style: TextStyle(color: Colors.blue),
+                )),
+            TextButton(
+                onPressed: () {
                   DatePicker.showTime12hPicker(context, showTitleActions: true,
                       onChanged: (date) {
                     print('change $date in time zone ' +
