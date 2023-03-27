@@ -108,7 +108,7 @@ class HomePage extends StatelessWidget {
                       showTitleActions: true,
                       minTime: DateTime(2018, 3, 5),
                       maxTime: DateTime(2019, 6, 7),
-                      theme: DatePickerTheme(
+                      theme: DatePickerThemeCustomize(
                           headerColor: Colors.orange,
                           backgroundColor: Colors.blue,
                           itemStyle: TextStyle(
@@ -146,7 +146,7 @@ class HomePage extends StatelessWidget {
                 onPressed: () {
                   DatePicker.showDatePicker(context,
                     showTitleActions: true,
-                      theme: DatePickerTheme(
+                      theme: DatePickerThemeCustomize(
                         itemHeight: 51,
                         titleHeight: 120 + 24,
                         backgroundColor: const Color(0xFFFBFCFF),
